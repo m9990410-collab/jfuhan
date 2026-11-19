@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>JFuture — Тест про Хануку</title>
+  <script src="https://st.max.ru/js/max-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #F3F4F6;
+      --surface: #FFFFFF;
+      --surface-secondary: #F8FAFC;
+      --surface-hover: #F1F5F9;
+      --text: #0F172A;
+      --text-secondary: #64748B;
+      --border: #E2E8F0;
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+      --primary-text: #FFFFFF;
+      --candle-body: #E2E8F0;
+      --candle-lit: #FDE68A;
+      --menorah-base: #94A3B8;
+      --flame-outer: #F59E0B;
+      --flame-inner: #FEF08A;
+      --flame-glow: rgba(245, 158, 11, 0.25);
+      --ok-bg: #ECFDF5;
+      --ok-border: #10B981;
+      --ok-text: #065F46;
+      --bad-bg: #FEF2F2;
+      --bad-border: #EF4444;
+      --bad-text: #991B1B;
+      --shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0D0F12;
+      --surface: #16191E;
+      --surface-secondary: #1E2229;
+      --surface-hover: #252A33;
+      --text: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --border: #282D37;
+      --primary: #3B82F6;
+      --primary-hover: #2563EB;
+      --primary-text: #FFFFFF;
+      --candle-body: #2A303C;
+      --candle-lit: #FCD34D;
+      --menorah-base: #475569;
+      --flame-outer: #F59E0B;
+      --flame-inner: #FEF9C3;
+      --flame-glow: rgba(245, 158, 11, 0.32);
+      --ok-bg: rgba(16, 185, 129, 0.14);
+      --ok-border: #10B981;
+      --ok-text: #6EE7B7;
+      --bad-bg: rgba(239, 68, 68, 0.14);
+      --bad-border: #EF4444;
+      --bad-text: #FCA5A5;
+      --shadow: 0 8px 28px rgba(0, 0, 0, 0.32);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Шапка */
+    .topbar {
+      background: var(--surface);
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: pulseDot 3s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.75; }
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-pill {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface-secondary);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+      transition: all 0.25s ease;
+    }
+
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-secondary);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .theme-btn:hover {
+      background: var(--surface-hover);
+    }
+
+    .theme-btn:active {
+      transform: scale(0.88) rotate(15deg);
+    }
+
+    /* SVG Ханукия (1 шамаш + 8 свечей) */
+    .menorah-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 12px 16px 2px;
+      flex-shrink: 0;
+    }
+
+    .menorah-svg {
+      width: 260px;
+      height: 60px;
+      overflow: visible;
+    }
+
+    .candle-wax {
+      fill: var(--candle-body);
+      transition: fill 0.4s ease;
+    }
+
+    .candle-group.lit .candle-wax {
+      fill: var(--candle-lit);
+    }
+
+    .candle-wick {
+      stroke: var(--text-secondary);
+      stroke-width: 1.4;
+      stroke-linecap: round;
+    }
+
+    .flame-halo {
+      fill: var(--flame-glow);
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .candle-group.lit .flame-halo {
+      opacity: 1;
+      transform: scale(1);
+      animation: haloPulse 2.4s infinite ease-in-out alternate;
+    }
+
+    @keyframes haloPulse {
+      0% { transform: scale(0.92); opacity: 0.7; }
+      100% { transform: scale(1.15); opacity: 1; }
+    }
+
+    .flame-group {
+      opacity: 0;
+      transform: scale(0.2);
+      transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .candle-group.lit .flame-group {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .flame-outer {
+      fill: var(--flame-outer);
+      animation: sway 2.1s infinite ease-in-out alternate;
+    }
+
+    .flame-inner {
+      fill: var(--flame-inner);
+    }
+
+    @keyframes sway {
+      0% { transform: rotate(-3.5deg) scaleY(0.97); }
+      100% { transform: rotate(3.5deg) scaleY(1.05); }
+    }
+
+    /* Центральная область */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8px 18px;
+      max-width: 520px;
+      width: 100%;
+      margin: 0 auto;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px 20px;
+      box-shadow: var(--shadow);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      animation: cardIn 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .title {
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      font-size: 14.5px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .q-text {
+      font-size: 17.5px;
+      font-weight: 700;
+      line-height: 1.38;
+      letter-spacing: -0.2px;
+    }
+
+    .note {
+      background: var(--surface-secondary);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: var(--text);
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      margin-top: 0;
+      padding: 0 14px;
+      border-width: 0;
+      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .note.visible {
+      opacity: 1;
+      max-height: 220px;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-width: 1px;
+    }
+
+    /* Нижняя панель кнопок */
+    .keyboard-dock {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+      flex-shrink: 0;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .dock-inner {
+      max-width: 520px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .key-btn {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 14px;
+      border-radius: 13px;
+      border: 1px solid var(--border);
+      background: var(--surface-secondary);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.14s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+      animation: btnIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    .key-btn:nth-child(1) { animation-delay: 0.02s; }
+    .key-btn:nth-child(2) { animation-delay: 0.06s; }
+    .key-btn:nth-child(3) { animation-delay: 0.10s; }
+    .key-btn:nth-child(4) { animation-delay: 0.14s; }
+
+    @keyframes btnIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .key-btn:hover:not(:disabled) {
+      background: var(--surface-hover);
+    }
+
+    .key-btn:active:not(:disabled) {
+      transform: scale(0.982);
+    }
+
+    .btn-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .letter-tag {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .key-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-text);
+      font-weight: 600;
+      justify-content: center;
+      text-align: center;
+      min-height: 48px;
+    }
+
+    .key-btn.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .key-btn.dimmed {
+      opacity: 0.52;
+    }
+
+    .key-btn.is-correct {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+      color: var(--ok-text);
+      font-weight: 600;
+      opacity: 1;
+      animation: popCorrect 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .key-btn.is-correct .letter-tag {
+      background: var(--ok-border);
+      border-color: var(--ok-border);
+      color: #fff;
+    }
+
+    .key-btn.is-wrong {
+      background: var(--bad-bg);
+      border-color: var(--bad-border);
+      color: var(--bad-text);
+      opacity: 1;
+      animation: shakeWrong 0.36s ease;
+    }
+
+    .key-btn.is-wrong .letter-tag {
+      background: var(--bad-border);
+      border-color: var(--bad-border);
+      color: #fff;
+    }
+
+    @keyframes popCorrect {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.018); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shakeWrong {
+      0%, 100% { transform: translateX(0); }
+      22% { transform: translateX(-5px); }
+      44% { transform: translateX(5px); }
+      66% { transform: translateX(-3px); }
+      88% { transform: translateX(3px); }
+    }
+
+    .key-btn:disabled {
+      cursor: default;
+    }
+
+    .status-icon {
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Финальный экран */
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      flex-shrink: 0;
+    }
+
+    .ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      stroke: var(--border);
+      stroke-width: 5;
+      fill: none;
+    }
+
+    .ring-fill {
+      stroke: var(--primary);
+      stroke-width: 5;
+      stroke-linecap: round;
+      fill: none;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <header class="topbar">
+      <div class="brand"><span class="brand-dot"></span>JFuture</div>
+      <div class="topbar-right">
+        <div class="step-pill" id="step-label">Ханука</div>
+        <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Сменить тему" title="Сменить тему"></button>
+      </div>
+    </header>
+    <div class="menorah-wrap" id="menorah"></div>
+  </div>
+
+  <main class="main" id="screen"></main>
+
+  <footer class="keyboard-dock">
+    <div class="dock-inner" id="dock"></div>
+  </footer>
+
+  <script>
+    let webapp = null;
+    try {
+      if (window.WebApp) {
+        webapp = window.WebApp;
+        webapp.ready();
+        webapp.expand();
+      }
+    } catch (e) {}
+
+    const SUN_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`;
+    const MOON_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("jfuture_theme", theme);
+      const btn = document.getElementById("theme-toggle");
+      if (btn) btn.innerHTML = theme === "dark" ? SUN_ICON : MOON_ICON;
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem("jfuture_theme");
+      if (saved) {
+        applyTheme(saved);
+        return;
+      }
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(prefersDark ? "dark" : "light");
+    }
+
+    function toggleTheme() {
+      haptic("light");
+      const current = document.documentElement.getAttribute("data-theme");
+      applyTheme(current === "dark" ? "light" : "dark");
+    }
+
+    function haptic(type) {
+      try {
+        if (!webapp || !webapp.HapticFeedback) return;
+        if (type === "success" || type === "error") {
+          webapp.HapticFeedback.notificationOccurred(type);
+        } else {
+          webapp.HapticFeedback.impactOccurred("light");
+        }
+      } catch (e) {}
+    }
+
+    const QUIZ = [
+      {
+        question: "Когда обычно зажигают ханукальные свечи?",
+        options: [
+          "Утром после пробуждения",
+          "С выходом звёзд или сразу после заката",
+          "Ровно в полночь"
+        ],
+        correct: 1,
+        explanation: "Обычно свечи зажигают с появлением первых звёзд (или сразу после захода солнца), когда на улице уже стемнело."
+      },
+      {
+        question: "Если нужно уйти из дома пораньше, когда самое раннее можно зажечь свечи?",
+        options: [
+          "Сразу с полудня",
+          "За 1 час 15 минут до выхода звёзд (плаг а-минха)",
+          "В любое время утра"
+        ],
+        correct: 1,
+        explanation: "Самое раннее — время плаг а-минха (примерно за 1 час 15 минут до звёзд). Главное, чтобы свечи не погасли раньше чем через полчаса после темноты."
+      },
+      {
+        question: "До какого времени можно зажечь свечи, если вернулся домой поздно?",
+        options: [
+          "Строго в течение часа после заката",
+          "Всю ночь до рассвета, пока в доме не спят",
+          "Только до 22:00"
+        ],
+        correct: 1,
+        explanation: "Зажечь можно всю ночь до рассвета, пока кто-то из домашних ещё не спит и видит огни. После полуночи обычно зажигают уже без благословения."
+      },
+      {
+        question: "Где ставят ханукию в Земле Израиля?",
+        options: [
+          "Снаружи у входа в дом или двор",
+          "Только на кухне",
+          "В шкафу, чтобы не задуло ветер"
+        ],
+        correct: 0,
+        explanation: "В Израиле ханукию ставят снаружи у двери в специальном стеклянном футляре, чтобы чудо Хануки видели все прохожие."
+      },
+      {
+        question: "Где зажигают ханукию за пределами Израиля?",
+        options: [
+          "На улице у подъезда",
+          "Дома на подоконнике у окна или у двери комнаты",
+          "Только в синагоге"
+        ],
+        correct: 1,
+        explanation: "За пределами Израиля свечи зажигают дома: на окне, выходящем на улицу, или у входа в комнату напротив мезузы."
+      },
+      {
+        question: "Сколько минимум должны гореть ханукальные свечи?",
+        options: [
+          "30 минут после наступления темноты",
+          "Не меньше 3 часов",
+          "До самого утра"
+        ],
+        correct: 0,
+        explanation: "Свечи должны гореть минимум полчаса после выхода звёзд. В пятницу перед Шаббатом наливают побольше масла, чтобы хватило на дольше."
+      },
+      {
+        question: "Какие свечи лучше использовать — масляные или восковые?",
+        options: [
+          "Лучше масляные (на оливковом масле)",
+          "Только разноцветные парафиновые",
+          "Масло вообще не используют"
+        ],
+        correct: 0,
+        explanation: "Лучше всего оливковое масло — именно с ним произошло чудо в Храме. Но обычные восковые или парафиновые свечи тоже подходят."
+      },
+      {
+        question: "Как зажигают ханукальные свечи в пятницу перед Шаббатом?",
+        options: [
+          "Сначала субботние, потом ханукальные",
+          "Сначала ханукальные, потом субботние (до заката)",
+          "В пятницу ханукию не зажигают"
+        ],
+        correct: 1,
+        explanation: "Сначала зажигают ханукальные свечи, а сразу после них — субботние. Когда зажжены субботние свечи, разводить огонь уже нельзя."
+      },
+      {
+        question: "Когда зажигают ханукальные свечи на исходе Шаббата?",
+        options: [
+          "Сразу после выхода звёзд, когда Шаббат закончился",
+          "За полчаса до конца Шаббата",
+          "Только утром в воскресенье"
+        ],
+        correct: 0,
+        explanation: "Только после полного окончания Шаббата с выходом звёзд. Дома сначала делают Авдалу, а потом зажигают ханукию."
+      },
+      {
+        question: "Что делать с маслом и фитилями, которые остались после Хануки?",
+        options: [
+          "Использовать для готовки",
+          "Сжечь отдельно — в быту их использовать нельзя",
+          "Обязательно убрать до следующего года"
+        ],
+        correct: 1,
+        explanation: "Всё, что было выделено для заповеди, нельзя использовать для обычных дел — после 8-го дня остатки масла и фитилей сжигают."
+      }
+    ];
+
+    const LETTERS = ["A", "B", "C", "D"];
+    let currentIdx = 0;
+    let score = 0;
+    let answered = false;
+
+    const screenEl = document.getElementById("screen");
+    const dockEl = document.getElementById("dock");
+    const stepEl = document.getElementById("step-label");
+    const menorahEl = document.getElementById("menorah");
+
+    function renderMenorah(litCount) {
+      const candlesCount = 8;
+      const startX = 64;
+      const stepX = 24;
+      const width = startX + candlesCount * stepX + 14;
+
+      let candlesHtml = "";
+
+      const sx = 28;
+      const sTop = 14;
+      const sH = 38;
+      const sWick = sTop - 4;
+      const sFlame = sWick - 1;
+      candlesHtml += `
+        <g class="candle-group lit">
+          <circle cx="${sx}" cy="${sFlame - 5}" r="10" class="flame-halo" style="transform-origin: ${sx}px ${sFlame - 5}px;" />
+          <line x1="${sx}" y1="${sTop}" x2="${sx}" y2="${sWick}" class="candle-wick" />
+          <rect x="${sx - 3.5}" y="${sTop}" width="7" height="${sH}" rx="1.5" class="candle-wax" />
+          <rect x="${sx - 5.5}" y="${sTop + sH}" width="11" height="3" rx="1.5" fill="var(--menorah-base)" />
+          <g class="flame-group" style="transform-origin: ${sx}px ${sFlame}px;">
+            <path d="M ${sx} ${sFlame - 10} C ${sx + 4} ${sFlame - 4.5}, ${sx + 3.5} ${sFlame}, ${sx} ${sFlame} C ${sx - 3.5} ${sFlame}, ${sx - 4} ${sFlame - 4.5}, ${sx} ${sFlame - 10} Z" class="flame-outer" style="transform-origin: ${sx}px ${sFlame}px;" />
+            <path d="M ${sx} ${sFlame - 6} C ${sx + 1.8} ${sFlame - 2.8}, ${sx + 1.8} ${sFlame - 0.5}, ${sx} ${sFlame - 0.5} C ${sx - 1.8} ${sFlame - 0.5}, ${sx - 1.8} ${sFlame - 2.8}, ${sx} ${sFlame - 6} Z" class="flame-inner" />
+          </g>
+        </g>
+      `;
+
+      for (let i = 0; i < candlesCount; i++) {
+        const x = startX + i * stepX;
+        const topY = 23;
+        const h = 29;
+        const wickTop = topY - 4;
+        const flameY = wickTop - 1;
+        const isLit = i < litCount;
+
+        candlesHtml += `
+          <g class="candle-group ${isLit ? "lit" : ""}">
+            <circle cx="${x}" cy="${flameY - 5}" r="9.5" class="flame-halo" style="transform-origin: ${x}px ${flameY - 5}px;" />
+            <line x1="${x}" y1="${topY}" x2="${x}" y2="${wickTop}" class="candle-wick" />
+            <rect x="${x - 3.5}" y="${topY}" width="7" height="${h}" rx="1.5" class="candle-wax" />
+            <rect x="${x - 5.5}" y="${topY + h}" width="11" height="3" rx="1.5" fill="var(--menorah-base)" />
+            <g class="flame-group" style="transform-origin: ${x}px ${flameY}px;">
+              <path d="M ${x} ${flameY - 10} C ${x + 4} ${flameY - 4.5}, ${x + 3.5} ${flameY}, ${x} ${flameY} C ${x - 3.5} ${flameY}, ${x - 4} ${flameY - 4.5}, ${x} ${flameY - 10} Z" class="flame-outer" style="transform-origin: ${x}px ${flameY}px;" />
+              <path d="M ${x} ${flameY - 6} C ${x + 1.8} ${flameY - 2.8}, ${x + 1.8} ${flameY - 0.5}, ${x} ${flameY - 0.5} C ${x - 1.8} ${flameY - 0.5}, ${x - 1.8} ${flameY - 2.8}, ${x} ${flameY - 6} Z" class="flame-inner" />
+            </g>
+          </g>
+        `;
+      }
+
+      menorahEl.innerHTML = `
+        <svg class="menorah-svg" viewBox="0 0 ${width} 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="18" y="55" width="${width - 30}" height="4" rx="2" fill="var(--menorah-base)" />
+          <rect x="${width / 2 - 26}" y="61" width="52" height="3.5" rx="1.75" fill="var(--menorah-base)" opacity="0.7" />
+          ${candlesHtml}
+        </svg>
+      `;
+    }
+
+    function updateProgressMenorah(stepDone) {
+      const litCandles = Math.round((stepDone / QUIZ.length) * 8);
+      renderMenorah(litCandles);
+    }
+
+    function renderStart() {
+      stepEl.textContent = `${QUIZ.length} вопросов`;
+      renderMenorah(0);
+
+      screenEl.innerHTML = `
+        <div class="card">
+          <h1 class="title">Тест про Хануку</h1>
+          <p class="desc">
+            10 вопросов от JFuture. Проверим, насколько хорошо ты знаешь традиции праздника.
+          </p>
+        </div>
+      `;
+
+      dockEl.innerHTML = `
+        <button class="key-btn primary" onclick="startQuiz()">Начать тест</button>
+      `;
+    }
+
+    function startQuiz() {
+      haptic("light");
+      currentIdx = 0;
+      score = 0;
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      answered = false;
+      const q = QUIZ[currentIdx];
+      stepEl.textContent = `${currentIdx + 1} / ${QUIZ.length}`;
+      updateProgressMenorah(currentIdx);
+
+      screenEl.innerHTML = `
+        <div class="card">
+          <div class="q-text">${q.question}</div>
+          <div class="note" id="note">${q.explanation}</div>
+        </div>
+      `;
+
+      dockEl.innerHTML = q.options
+        .map(
+          (opt, idx) => `
+          <button class="key-btn" id="opt-${idx}" onclick="selectOption(${idx})">
+            <span class="btn-left">
+              <span class="letter-tag">${LETTERS[idx]}</span>
+              <span>${opt}</span>
+            </span>
+            <span class="status-icon"></span>
+          </button>
+        `
+        )
+        .join("");
+    }
+
+    function selectOption(selectedIdx) {
+      if (answered) return;
+      answered = true;
+
+      const q = QUIZ[currentIdx];
+      const isCorrect = selectedIdx === q.correct;
+
+      if (isCorrect) {
+        score++;
+        haptic("success");
+      } else {
+        haptic("error");
+      }
+
+      updateProgressMenorah(currentIdx + 1);
+
+      q.options.forEach((_, idx) => {
+        const btn = document.getElementById(`opt-${idx}`);
+        const badge = btn.querySelector(".status-icon");
+        btn.disabled = true;
+        if (idx === q.correct) {
+          btn.classList.add("is-correct");
+          badge.textContent = "✓";
+        } else if (idx === selectedIdx && !isCorrect) {
+          btn.classList.add("is-wrong");
+          badge.textContent = "✕";
+        } else {
+          btn.classList.add("dimmed");
+        }
+      });
+
+      requestAnimationFrame(() => {
+        document.getElementById("note").classList.add("visible");
+      });
+
+      const isLast = currentIdx + 1 >= QUIZ.length;
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "key-btn primary";
+      nextBtn.textContent = isLast ? "Показать результат" : "Следующий вопрос";
+      nextBtn.onclick = () => {
+        haptic("light");
+        if (isLast) {
+          renderResult();
+        } else {
+          currentIdx++;
+          renderQuestion();
+        }
+      };
+      dockEl.appendChild(nextBtn);
+    }
+
+    function renderResult() {
+      stepEl.textContent = "Готово";
+      renderMenorah(8);
+
+      const radius = 28;
+      const circumference = 2 * Math.PI * radius;
+      const targetOffset = circumference * (1 - score / QUIZ.length);
+
+      let title = "Есть над чем поработать";
+      let comment = "Теперь основные правила точно не перепутаешь.";
+      if (score === QUIZ.length) {
+        title = "Отлично!";
+        comment = "Все 10 из 10 — ты знаешь про Хануку всё.";
+      } else if (score >= 7) {
+        title = "Хороший результат";
+        comment = "Почти без ошибок — традиции знаешь отлично.";
+      } else if (score >= 4) {
+        title = "Неплохо";
+        comment = "Основное знаешь, а детали только что освежил.";
+      }
+
+      screenEl.innerHTML = `
+        <div class="card">
+          <div class="result-header">
+            <div class="ring-wrap">
+              <svg width="68" height="68" viewBox="0 0 68 68">
+                <circle class="ring-bg" cx="34" cy="34" r="${radius}" />
+                <circle class="ring-fill" id="score-ring" cx="34" cy="34" r="${radius}"
+                  stroke-dasharray="${circumference}"
+                  stroke-dashoffset="${circumference}" />
+              </svg>
+              <div class="ring-text" id="score-num">0/${QUIZ.length}</div>
+            </div>
+            <div>
+              <h2 class="title" style="margin-bottom:4px;">${title}</h2>
+              <p class="desc">${comment}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      requestAnimationFrame(() => {
+        const ring = document.getElementById("score-ring");
+        if (ring) ring.style.strokeDashoffset = targetOffset;
+
+        const numEl = document.getElementById("score-num");
+        let cur = 0;
+        const timer = setInterval(() => {
+          if (cur >= score) {
+            clearInterval(timer);
+            if (numEl) numEl.textContent = `${score}/${QUIZ.length}`;
+            return;
+          }
+          cur++;
+          if (numEl) numEl.textContent = `${cur}/${QUIZ.length}`;
+        }, 90);
+      });
+
+      dockEl.innerHTML = `
+        <button class="key-btn primary" onclick="startQuiz()">Пройти заново</button>
+        <button class="key-btn" style="justify-content:center;" onclick="closeApp()">Закрыть</button>
+      `;
+    }
+
+    function closeApp() {
+      if (webapp && webapp.close) {
+        webapp.close();
+      } else {
+        renderStart();
+      }
+    }
+
+    initTheme();
+    renderStart();
+  </script>
+</body>
+</html>
